@@ -17,12 +17,37 @@
       const go = new Go();
 
       WebAssembly.instantiateStreaming(
-        fetch("app/main.wasm"),
+        fetch("main.wasm"),
         go.importObject
       ).then((result) => {
         go.run(result.instance);
       });
+
+      const parseAndWriteCSV = (input) =>
+        (document.getElementById("output").value = parseCSV(
+          document.getElementById("input").value
+        ));
     </script>
   </head>
-  <body></body>
+  <body>
+    <div>
+      <textarea id="input" name="input" cols="140" rows="20"></textarea>
+    </div>
+    <div>
+      <input
+        id="button"
+        type="submit"
+        onclick="parseAndWriteCSV()"
+        value="Parse CSV record"
+      />
+    </div>
+    <div>
+      <textarea id="output" name="output" cols="140" rows="20"></textarea>
+    </div>
+  </body>
+  <script charset="utf-8">
+    const PLACEHOLDER =
+      "John,25,10,John Doe's birthday\nJane,21,04,Jane Doe's birthday\nMiguel,1,4";
+    document.getElementById("input").placeholder = PLACEHOLDER;
+  </script>
 </html>
