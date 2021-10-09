@@ -25,6 +25,6 @@ func parseCSVWrapper() js.Func {
 			return fmt.Errorf("Could not parse CSV: %w", err).Error()
 		}
 
-		return fmt.Sprintf("%v", birthdays)
+		return birthdays.toIcal()
 	})
 }
