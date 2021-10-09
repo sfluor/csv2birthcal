@@ -6,6 +6,9 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"time"
+
+	ics "github.com/arran4/golang-ical"
 )
 
 // Birthday describes the structure of an expected record in the CSV
@@ -16,7 +19,27 @@ type Birthday struct {
 	Description string
 }
 
-func fromCSV(raw io.Reader) ([]Birthday, error) {
+type Birthdays []Birthday
+
+func (bs Birthdays) toIcal() string {
+	calendar := ics.NewCalendar()
+	calendar.SetName("Birthdays Ical")
+
+	now := time.Now()
+
+	for id, birthday := range bs {
+		event := calendar.AddEvent(fmt.Sprintf("birthday-%d", id))
+		event.SetDescription(fmt.Sprintf("%s's birthday\n%s", birthday.Name, birthday.Description))
+		event.SetStartAt(time.Date(now.Year(), time.Month(birthday.Month), int(birthday.Day), 10, 0, 0, 0, time.UTC))
+		event.SetClass(ics.ClassificationPrivate)
+		event.SetSummary(birthday.Name)
+		event.AddRrule("FREQ=YEARLY")
+	}
+
+	return calendar.Serialize()
+}
+
+func fromCSV(raw io.Reader) (Birthdays, error) {
 	reader := csv.NewReader(raw)
 	reader.FieldsPerRecord = -1
 	reader.TrimLeadingSpace = true
@@ -61,5 +84,5 @@ func fromCSVLine(line []string) (Birthday, error) {
 	}
 
 	return Birthday{
-		Name: line[0], Day: uint8(day), Month: uint8(month), Description: description}, nil
+		Name: strings.Title(line[0]), Day: uint8(day), Month: uint8(month), Description: description}, nil
 }
